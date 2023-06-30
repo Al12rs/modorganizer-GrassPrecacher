@@ -1,12 +1,17 @@
 import mobase
 import os
-import pathlib
 
 from typing import List
 from pathlib import Path
-from PyQt5.QtCore import QFileInfo, QDir, qWarning, QTimer, qDebug
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMainWindow, QWidget, QDialogButtonBox, QMessageBox
+
+try:
+    from PyQt5.QtCore import QDir
+    from PyQt5.QtGui import QIcon
+    from PyQt5.QtWidgets import QMainWindow, QWidget, QMessageBox
+except:
+    from PyQt6.QtCore import QDir
+    from PyQt6.QtGui import QIcon
+    from PyQt6.QtWidgets import QMainWindow, QWidget, QMessageBox
 
 class GrassPrecacher(mobase.IPluginTool):
 
@@ -31,7 +36,7 @@ class GrassPrecacher(mobase.IPluginTool):
         return "Automatically restarts the game if it crashed on close (only works for meh321 PrecacheGrass mod)"
 
     def version(self) -> mobase.VersionInfo:
-        return mobase.VersionInfo(1, 0, 0, mobase.ReleaseType.FINAL)
+        return mobase.VersionInfo(1, 1, 0, mobase.ReleaseType.FINAL)
 
     def isActive(self) -> bool:
         return self._organizer.pluginSetting(self.name(), "enabled") is True
@@ -125,7 +130,3 @@ The game is expected to crash multiple times during the operation, MO2 will rest
             # The game terminated and the file is missing, assume operation completed successfully
             QMessageBox.information(self._parentWidget, "Grass precaching completed.",
                 """ The grass caching operation was completed successfully.""", QMessageBox.Ok)
-
-
-def createPlugin() -> mobase.IPlugin:
-    return GrassPrecacher();
