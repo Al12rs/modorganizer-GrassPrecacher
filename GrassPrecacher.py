@@ -7,17 +7,18 @@ from pathlib import Path
 try:
     from PyQt5.QtCore import QDir
     from PyQt5.QtGui import QIcon
-    from PyQt5.QtWidgets import QMainWindow, QWidget, QMessageBox
+    #from PyQt5 import QMainWindow, QWidget, QMessageBox
+    from PyQt5 import QtWidgets
 except:
     from PyQt6.QtCore import QDir
     from PyQt6.QtGui import QIcon
-    from PyQt6.QtWidgets import QMainWindow, QWidget, QMessageBox
+    from PyQt6 import QtWidgets
 
 class GrassPrecacher(mobase.IPluginTool):
 
     _organizer: mobase.IOrganizer
-    _mainWindow: QMainWindow
-    _parentWidget: QWidget
+    _mainWindow: QtWidgets.QMainWindow
+    _parentWidget: QtWidgets.QWidget
 
     def __init__(self):
         super().__init__()
@@ -55,7 +56,7 @@ class GrassPrecacher(mobase.IPluginTool):
     def icon(self):
         return QIcon()
 
-    def setParentWidget(self, widget:QWidget):
+    def setParentWidget(self, widget:QtWidgets.QWidget):
         self._parentWidget = widget
     
     def _isGrassPluginPresent(self) -> bool:
@@ -70,13 +71,13 @@ class GrassPrecacher(mobase.IPluginTool):
     def display(self):
         # When you press the option in the tools menu:
         if not self._isGrassPluginPresent():
-            QMessageBox.critical(self._parentWidget,"GrassControl plugin is missing", "\"No Grass In Object\" mod not found. Please install the mod and refresh MO2.")
+            QtWidgets.QMessageBox.critical(self._parentWidget,"GrassControl plugin is missing", "\"No Grass In Object\" mod not found. Please install the mod and refresh MO2.")
             return
-        if QMessageBox.warning(self._parentWidget,"Start Grass Precaching?", 
+        if QtWidgets.QMessageBox.warning(self._parentWidget,"Start Grass Precaching?", 
 """This operation can take a long time (1hour+).
  
 The game is expected to crash multiple times during the operation, MO2 will restart it automatically until it's complete.""",
-                 QMessageBox.Yes | QMessageBox.Abort) == QMessageBox.Yes :
+                 QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.Abort) == QtWidgets.QMessageBox.StandardButton.Yes.value :
             gameFolder : QDir = self._organizer.managedGame().gameDirectory()
             cacheFile = gameFolder.absoluteFilePath("PrecacheGrass.txt")
             # Create PrecacheGrass.txt in game folder
@@ -91,7 +92,7 @@ The game is expected to crash multiple times during the operation, MO2 will rest
         appHandle = self._organizer.startApplication(sksePath, ["-forcesteamloader"])
 
         if  appHandle == 0:
-            QMessageBox.critical(self._parentWidget,"Grass Precaching Error", "MO2 failed to restart the game, aborting Grass Precaching")
+            QtWidgets.QMessageBox.critical(self._parentWidget,"Grass Precaching Error", "MO2 failed to restart the game, aborting Grass Precaching")
             cacheFile = gameFolder.absoluteFilePath("PrecacheGrass.txt")
             os.remove(cacheFile)
         else :
@@ -109,14 +110,14 @@ The game is expected to crash multiple times during the operation, MO2 will rest
         if os.path.exists(cacheFile) :
             # PrecacheGrass.txt exists so we restart if user doesn't abort in 8 seconds.
 
-            timedBox = QMessageBox(self._parentWidget)
+            timedBox = QtWidgets.QMessageBox(self._parentWidget)
             timedBox.setWindowTitle("Restarting Game...") 
             timedBox.setText("""Grass Precacheing isn't finished yet, Mo2 will try restart the game automatically in 8 seconds... 
 (The game is expected to crash multiple times during this operation, so this is normal).""")
-            timedBox.addButton(QMessageBox.Ok)
-            timedBox.addButton(QMessageBox.Abort)
-            okButton = timedBox.button(QMessageBox.Ok)
-            timedBox.button(QMessageBox.Ok).animateClick(8000)
+            timedBox.addButton(QtWidgets.QMessageBox.StandardButton.Ok)
+            timedBox.addButton(QtWidgets.QMessageBox.StandardButton.Abort)
+            okButton = timedBox.button(QtWidgets.QMessageBox.StandardButton.Ok)
+            timedBox.button(QtWidgets.QMessageBox.StandardButton.Ok).animateClick(8000)
             timedBox.exec()
 
             if timedBox.clickedButton() == okButton :
@@ -125,8 +126,8 @@ The game is expected to crash multiple times during the operation, MO2 will rest
             else:
                 #stop loop
                 os.remove(cacheFile)
-                QMessageBox.warning(self._parentWidget,"Grass Precaching Aborted", "The grass precaching operation was terminated before being completed.")
+                QtWidgets.QMessageBox.warning(self._parentWidget,"Grass Precaching Aborted", "The grass precaching operation was terminated before being completed.")
         else:
             # The game terminated and the file is missing, assume operation completed successfully
-            QMessageBox.information(self._parentWidget, "Grass precaching completed.",
-                """ The grass caching operation was completed successfully.""", QMessageBox.Ok)
+            QtWidgets.QMessageBox.information(self._parentWidget, "Grass precaching completed.",
+                """ The grass caching operation was completed successfully.""", QtWidgets.QMessageBox.StandardButton.Ok)
